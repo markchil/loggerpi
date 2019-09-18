@@ -1,6 +1,6 @@
 from time import sleep
 import numpy as np
-import matplotilb.pyplot as plt
+import matplotlib.pyplot as plt
 from w1thermsensor import W1ThermSensor
 
 UPDATE_INTERVAL = 1.0
