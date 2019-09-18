@@ -14,7 +14,7 @@ time_grid = np.arange(BUFFER_LENGTH) * -1 * UPDATE_INTERVAL / 60.0
 figure, axis = plt.subplots()
 axis.set_xlabel('Time Relative to Now [min]')
 axis.set_ylabel('Temperature [°F]')
-line = axis.plot(time_grid, temperature_buffer, '.--')
+line, = axis.plot(time_grid, temperature_buffer, '.--')
 
 while True:
     temperature = sensor.get_temperature(UNITS)
