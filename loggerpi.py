@@ -1,30 +1,45 @@
 from time import sleep
+from datetime import datetime
+from socket import gethostname
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.dates import date2num
 from w1thermsensor import W1ThermSensor
 
 UPDATE_INTERVAL = 1.0
 BUFFER_DURATION = 60.0 * 60.0 * 1.0
 BUFFER_LENGTH = int(np.ceil(BUFFER_DURATION / UPDATE_INTERVAL))
 UNITS = W1ThermSensor.DEGREES_F
+HOSTNAME = gethostname()
+
+
+def update_buffer(buffer_, new_value):
+    buffer_[0:-1] = buffer_[1:]
+    buffer_[-1] = new_value
+
 
 sensor = W1ThermSensor()
 temperature_buffer = np.nan * np.zeros(BUFFER_LENGTH)
-time_grid = np.arange(BUFFER_LENGTH) * UPDATE_INTERVAL / 60.0
-time_grid = -1 * time_grid[::-1]
+time_grid = np.nan * np.zeros(BUFFER_LENGTH)
+# time_grid = np.arange(BUFFER_LENGTH) * UPDATE_INTERVAL / 60.0
+# time_grid = -1 * time_grid[::-1]
 figure, axes = plt.subplots()
-axes.set_xlabel('Time Relative to Now [min]')
+axes.set_xlabel('Time')
 axes.set_ylabel('Temperature [°F]')
-line, = axes.plot(time_grid, temperature_buffer, '.--')
+axes.set_title(HOSTNAME)
+line, = axes.plot_date(time_grid, temperature_buffer, '.--')
 
 while True:
     temperature = sensor.get_temperature(UNITS)
+    timestamp = date2num(datetime.now())
     print("The current temperature is {:.1f}°F".format(temperature))
-    temperature_buffer[0:-1] = temperature_buffer[1:]
-    temperature_buffer[-1] = temperature
+    update_buffer(temperature_buffer, temperature)
+    update_buffer(time_grid, timestamp)
+    line.set_xdata(time_grid)
     line.set_ydata(temperature_buffer)
     axes.relim()
     axes.autoscale_view()
+    figure.autofmt_xdate()
     figure.canvas.draw_idle()
-    figure.savefig('temperature.png')
+    figure.savefig('temperature.png', bbox_inches='tight')
     sleep(UPDATE_INTERVAL)
