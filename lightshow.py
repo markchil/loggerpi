@@ -28,7 +28,7 @@ def start_RGB_PWM(frequency=60.0, duty_cycle=0.0):
         duty_cycle = [duty_cycle] * 3
     pwms = []
     for pin, dc in zip([RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN], duty_cycle):
-        pwms.append(start_PWM(pin, frequency, duty_cycle))
+        pwms.append(start_PWM(pin, frequency, dc))
     return pwms
 
 
