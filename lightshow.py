@@ -29,6 +29,7 @@ def start_RGB_PWM(frequency=60.0, duty_cycle=0.0):
     pwms = []
     for pin, dc in zip([RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN], duty_cycle):
         pwms.append(start_PWM(pin, frequency, duty_cycle))
+    return pwms
 
 
 def disco_mode_1(interval, pwms):
