@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.dates import date2num
 from w1thermsensor import W1ThermSensor
+import pickle as pkl
 
 UPDATE_INTERVAL = 2.0
 PLOT_UPDATE_STEP_INTERVAL = 10
@@ -12,6 +13,8 @@ BUFFER_DURATION = 60.0 * 60.0 * 1.0
 BUFFER_LENGTH = int(np.ceil(BUFFER_DURATION / UPDATE_INTERVAL))
 UNITS = W1ThermSensor.DEGREES_F
 HOSTNAME = gethostname()
+PLOT_FILE_NAME = 'temperature.png'
+DATA_FILE_NAME = 'temperature.pkl'
 
 
 def update_buffer(buffer_, new_value):
@@ -45,6 +48,8 @@ while True:
         axes.autoscale_view()
         figure.autofmt_xdate()
         figure.canvas.draw_idle()
-        figure.savefig('temperature.png', bbox_inches='tight')
+        figure.savefig(PLOT_FILE_NAME, bbox_inches='tight')
+        with open(DATA_FILE_NAME, 'wb') as pf:
+            pkl.dump([time_grid, temperature_buffer], pf)
     steps += 1
     sleep(UPDATE_INTERVAL)
