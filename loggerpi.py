@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import matplotlib
+matplotlib.use('pdf')
 from time import sleep
 from datetime import datetime
 from socket import gethostname
