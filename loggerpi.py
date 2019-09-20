@@ -98,6 +98,7 @@ def write_data_file(time_grid, temperature_buffer):
 
 
 def slope_to_duty_cycle(slope):
+    slope /= 24.0
     if slope >= 0:
         return min(slope, MAX_POSITIVE_SLOPE) / MAX_POSITIVE_SLOPE
     else:
