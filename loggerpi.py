@@ -46,20 +46,28 @@ def compute_trend(time_grid, temperature_buffer):
     return polynomial_coeffs
 
 
-def update_trend_line(time_grid, polynomial_coeffs):
+def evaluate_trend_line(time_grid, polynomial_coeffs):
     current_time = time_grid[-1]
     window_start_time = max(
         np.nanmin(time_grid), time_grid[-1] - SLOPE_WINDOW_DAYS
     )
     time_values = [window_start_time, current_time]
     temperature_values = np.polyval(polynomial_coeffs, time_values)
+    return time_values, temperature_values
+
+
+def update_trend_line_and_title(time_grid, polynomial_coeffs):
+    time_values, temperature_values = evaluate_trend_line(
+        time_grid, polynomial_coeffs
+    )
     trend_line.set_xdata(time_values)
     trend_line.set_ydata(temperature_values)
     slope_F_per_hr = polynomial_coeffs[0] * 24.0
+    slope_window_hr = (time_values[1] - time_values[0]) * 24.0
     axes.set_title(
         '{hostname:s}: '
         '$dT/dt={slope:.1f}$°F/hr ({window:.1f}hr window)'.format(
-            hostname=HOSTNAME, slope=slope_F_per_hr, window=SLOPE_WINDOW_HR
+            hostname=HOSTNAME, slope=slope_F_per_hr, window=slope_window_hr
         )
     )
 
@@ -92,7 +100,7 @@ while True:
     if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
         print("Updating plot...")
         polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
-        update_trend_line(time_grid, polynomial_coeffs)
+        update_trend_line_and_title(time_grid, polynomial_coeffs)
         update_temperature_trace(time_grid, temperature_buffer)
         redraw_and_save_plot()
         write_data_file(time_grid, temperature_buffer)
