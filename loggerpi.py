@@ -40,9 +40,9 @@ def compute_trend(time_grid, temperature_buffer):
         (time_grid >= time_grid[-1] - SLOPE_WINDOW_DAYS) &
         (~np.isnan(temperature_buffer))
     )
-    polynomial_coeffs, = np.polyfit(
+    polynomial_coeffs = np.polyfit(
         time_grid[mask], temperature_buffer[mask], 1
-    )
+    )[0]
     return polynomial_coeffs
 
 
