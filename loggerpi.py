@@ -32,8 +32,14 @@ red_pwm = lightshow.start_PWM(lightshow.RED_LED_PIN, PWM_FREQUENCY, 0)
 blue_pwm = lightshow.start_PWM(lightshow.BLUE_LED_PIN, PWM_FREQUENCY, 0)
 
 sensor = W1ThermSensor()
-temperature_buffer = np.nan * np.zeros(BUFFER_LENGTH)
-time_grid = np.nan * np.zeros(BUFFER_LENGTH)
+
+try:
+    with open(DATA_FILE_NAME, 'rb') as pf:
+        time_grid, temperature_buffer = pkl.load(pf)
+except FileNotFoundError:
+    temperature_buffer = np.nan * np.zeros(BUFFER_LENGTH)
+    time_grid = np.nan * np.zeros(BUFFER_LENGTH)
+
 figure, axes = plt.subplots()
 axes.set_xlabel('Time')
 axes.set_ylabel('Temperature [°F]')
@@ -138,5 +144,5 @@ try:
             write_data_file(time_grid, temperature_buffer)
         steps += 1
         sleep(UPDATE_INTERVAL_SECONDS)
-except KeyboardInterrupt:
+finally:
     cleanup()
