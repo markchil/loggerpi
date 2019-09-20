@@ -90,7 +90,7 @@ while True:
         polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
         update_trend_line(time_grid[-1], polynomial_coeffs)
         update_temperature_trace(time_grid, temperature_buffer)
-        redraw_and_save_plot(time_grid, temperature_buffer)
+        redraw_and_save_plot()
         write_data_file(time_grid, temperature_buffer)
     steps += 1
     sleep(UPDATE_INTERVAL_SECONDS)
