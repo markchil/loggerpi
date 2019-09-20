@@ -32,7 +32,7 @@ axes.set_xlabel('Time')
 axes.set_ylabel('Temperature [°F]')
 axes.set_title(HOSTNAME)
 temperature_line, = axes.plot_date(time_grid, temperature_buffer, '.--')
-trend_line, = axes.plot_date([np.nan, np.nan], [np.nan, np.nan])
+trend_line, = axes.plot_date([np.nan, np.nan], [np.nan, np.nan], '-')
 
 
 def compute_trend(time_grid, temperature_buffer):
@@ -46,8 +46,12 @@ def compute_trend(time_grid, temperature_buffer):
     return polynomial_coeffs
 
 
-def update_trend_line(current_time, polynomial_coeffs):
-    time_values = [current_time - SLOPE_WINDOW_DAYS, current_time]
+def update_trend_line(time_grid, polynomial_coeffs):
+    current_time = time_grid[-1]
+    window_start_time = max(
+        np.nanmin(time_grid), time_grid[-1] - SLOPE_WINDOW_DAYS
+    )
+    time_values = [window_start_time, current_time]
     temperature_values = np.polyval(polynomial_coeffs, time_values)
     trend_line.set_xdata(time_values)
     trend_line.set_ydata(temperature_values)
