@@ -42,7 +42,7 @@ def compute_trend(time_grid, temperature_buffer):
     )
     polynomial_coeffs = np.polyfit(
         time_grid[mask], temperature_buffer[mask], 1
-    )[0]
+    )
     return polynomial_coeffs
 
 
