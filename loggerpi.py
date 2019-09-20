@@ -69,7 +69,7 @@ def update_trend_line_and_title(time_grid, polynomial_coeffs):
     )
     trend_line.set_xdata(time_values)
     trend_line.set_ydata(temperature_values)
-    slope_F_per_hr = polynomial_coeffs[0] * 24.0
+    slope_F_per_hr = polynomial_coeffs[0] / 24.0
     slope_window_hr = (time_values[1] - time_values[0]) * 24.0
     axes.set_title(
         '{hostname:s}: '
