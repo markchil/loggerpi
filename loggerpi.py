@@ -92,7 +92,7 @@ while True:
     if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
         print("Updating plot...")
         polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
-        update_trend_line(time_grid[-1], polynomial_coeffs)
+        update_trend_line(time_grid, polynomial_coeffs)
         update_temperature_trace(time_grid, temperature_buffer)
         redraw_and_save_plot()
         write_data_file(time_grid, temperature_buffer)
