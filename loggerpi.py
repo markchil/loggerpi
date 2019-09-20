@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from time import sleep
 from datetime import datetime
 from socket import gethostname
@@ -7,6 +9,7 @@ from matplotlib.dates import date2num
 from w1thermsensor import W1ThermSensor
 import pickle as pkl
 import lightshow
+from RPi.GPIO import cleanup
 
 UPDATE_INTERVAL_SECONDS = 2.0
 SLOPE_WINDOW_HR = 1.0
@@ -116,19 +119,22 @@ def update_pwm(slope):
 
 
 steps = 1
-while True:
-    temperature = sensor.get_temperature(UNITS)
-    timestamp = date2num(datetime.now())
-    print("The current temperature is {:.1f}°F".format(temperature))
-    update_buffer(temperature_buffer, temperature)
-    update_buffer(time_grid, timestamp)
-    if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
-        print("Updating plot...")
-        polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
-        update_pwm(polynomial_coeffs[0])
-        update_trend_line_and_title(time_grid, polynomial_coeffs)
-        update_temperature_trace(time_grid, temperature_buffer)
-        redraw_and_save_plot()
-        write_data_file(time_grid, temperature_buffer)
-    steps += 1
-    sleep(UPDATE_INTERVAL_SECONDS)
+try:
+    while True:
+        temperature = sensor.get_temperature(UNITS)
+        timestamp = date2num(datetime.now())
+        # print("The current temperature is {:.1f}°F".format(temperature))
+        update_buffer(temperature_buffer, temperature)
+        update_buffer(time_grid, timestamp)
+        if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
+            # print("Updating plot...")
+            polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
+            update_pwm(polynomial_coeffs[0])
+            update_trend_line_and_title(time_grid, polynomial_coeffs)
+            update_temperature_trace(time_grid, temperature_buffer)
+            redraw_and_save_plot()
+            write_data_file(time_grid, temperature_buffer)
+        steps += 1
+        sleep(UPDATE_INTERVAL_SECONDS)
+except KeyboardInterrupt:
+    cleanup()
