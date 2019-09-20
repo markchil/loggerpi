@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import date2num
 from w1thermsensor import W1ThermSensor
 import pickle as pkl
+import lightshow
 
 UPDATE_INTERVAL_SECONDS = 2.0
 SLOPE_WINDOW_HR = 1.0
@@ -17,12 +18,13 @@ UNITS = W1ThermSensor.DEGREES_F
 HOSTNAME = gethostname()
 PLOT_FILE_NAME = 'temperature.png'
 DATA_FILE_NAME = 'temperature.pkl'
+PWM_FREQUENCY = 60
+MAX_POSITIVE_SLOPE = 10
+MIN_NEGATIVE_SLOPE = -10
 
-
-def update_buffer(buffer_, new_value):
-    buffer_[0:-1] = buffer_[1:]
-    buffer_[-1] = new_value
-
+lightshow.setup_LED_pins()
+red_pwm = lightshow.start_PWM(lightshow.RED_LED_PIN, PWM_FREQUENCY, 0)
+blue_pwm = lightshow.start_PWM(lightshow.BLUE_LED_PIN, PWM_FREQUENCY, 0)
 
 sensor = W1ThermSensor()
 temperature_buffer = np.nan * np.zeros(BUFFER_LENGTH)
@@ -33,6 +35,11 @@ axes.set_ylabel('Temperature [°F]')
 axes.set_title(HOSTNAME)
 temperature_line, = axes.plot_date(time_grid, temperature_buffer, '.--')
 trend_line, = axes.plot_date([np.nan, np.nan], [np.nan, np.nan], '-')
+
+
+def update_buffer(buffer_, new_value):
+    buffer_[0:-1] = buffer_[1:]
+    buffer_[-1] = new_value
 
 
 def compute_trend(time_grid, temperature_buffer):
@@ -90,6 +97,23 @@ def write_data_file(time_grid, temperature_buffer):
         pkl.dump([time_grid, temperature_buffer], pf)
 
 
+def slope_to_duty_cycle(slope):
+    if slope >= 0:
+        return min(slope, MAX_POSITIVE_SLOPE) / MAX_POSITIVE_SLOPE
+    else:
+        return max(slope, MIN_NEGATIVE_SLOPE) / MIN_NEGATIVE_SLOPE
+
+
+def update_pwm(slope):
+    duty_cycle = slope_to_duty_cycle(slope)
+    if slope > 0:
+        red_pwm.ChangeDutyCycle(duty_cycle)
+        blue_pwm.ChangeDutyCycle(0)
+    else:
+        red_pwm.ChangeDutyCycle(0)
+        blue_pwm.ChangeDutyCycle(duty_cycle)
+
+
 steps = 1
 while True:
     temperature = sensor.get_temperature(UNITS)
@@ -100,6 +124,7 @@ while True:
     if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
         print("Updating plot...")
         polynomial_coeffs = compute_trend(time_grid, temperature_buffer)
+        update_pwm(polynomial_coeffs[0])
         update_trend_line_and_title(time_grid, polynomial_coeffs)
         update_temperature_trace(time_grid, temperature_buffer)
         redraw_and_save_plot()
