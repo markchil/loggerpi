@@ -74,7 +74,7 @@ def update_trend_line_and_title(time_grid, spline):
     trend_line.set_ydata(temperature_values)
     slope_F_per_hr = spline(time_grid[-1], 1) / 24.0
     axes.set_title(
-        '{hostname:s}: $dT/dt={slope:.1f}$°F/hr'.format(
+        '{hostname:s}: $dT/dt={slope:+.1f}$°F/hr'.format(
             hostname=HOSTNAME, slope=slope_F_per_hr
         )
     )
