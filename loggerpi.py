@@ -38,7 +38,7 @@ trend_line, = axes.plot_date([np.nan, np.nan], [np.nan, np.nan])
 def compute_trend(time_grid, temperature_buffer):
     mask = (
         (time_grid >= time_grid[-1] - SLOPE_WINDOW_DAYS) &
-        (not np.isnan(temperature_buffer))
+        (~np.isnan(temperature_buffer))
     )
     polynomial_coeffs, = np.polyfit(
         time_grid[mask], temperature_buffer[mask], 1
@@ -78,7 +78,7 @@ def write_data_file(time_grid, temperature_buffer):
         pkl.dump([time_grid, temperature_buffer], pf)
 
 
-steps = 0
+steps = 1
 while True:
     temperature = sensor.get_temperature(UNITS)
     timestamp = date2num(datetime.now())
