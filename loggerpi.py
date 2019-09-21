@@ -112,9 +112,10 @@ def write_data_file(time_grid, temperature_buffer):
 
 def slope_to_duty_cycle(slope_F_per_hr):
     if slope_F_per_hr >= 0:
-        return min(slope_F_per_hr, MAX_POSITIVE_SLOPE) / MAX_POSITIVE_SLOPE
+        max_slope = abs(MAX_POSITIVE_SLOPE)
     else:
-        return max(slope_F_per_hr, MIN_NEGATIVE_SLOPE) / MIN_NEGATIVE_SLOPE
+        max_slope = abs(MIN_NEGATIVE_SLOPE)
+    return 100 * min(abs(slope_F_per_hr), max_slope) / max_slope
 
 
 def update_pwm(slope):
