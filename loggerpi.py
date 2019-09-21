@@ -16,6 +16,10 @@ from RPi.GPIO import cleanup
 
 UPDATE_INTERVAL_SECONDS = 2.0
 PLOT_UPDATE_STEP_INTERVAL_STEPS = 10
+TREND_WINDOW_SECONDS = 60.0 * 60.0
+TREND_WINDOW_LENGTH = int(
+    np.ceil(TREND_WINDOW_SECONDS / UPDATE_INTERVAL_SECONDS)
+)
 BUFFER_DURATION_SECONDS = 60.0 * 60.0 * 24.0
 BUFFER_LENGTH = int(np.ceil(BUFFER_DURATION_SECONDS / UPDATE_INTERVAL_SECONDS))
 UNITS = W1ThermSensor.DEGREES_F
@@ -45,7 +49,11 @@ axes.set_xlabel('Time')
 axes.set_ylabel('Temperature [°F]')
 axes.set_title(HOSTNAME)
 temperature_line, = axes.plot_date(time_grid, temperature_buffer, '.--')
-trend_line, = axes.plot_date(time_grid, temperature_buffer, '-')
+trend_line, = axes.plot_date(
+    np.nan * np.zeros(TREND_WINDOW_LENGTH),
+    np.nan * np.zeros(TREND_WINDOW_LENGTH),
+    '-'
+)
 
 
 def update_buffer(buffer_, new_value):
@@ -53,23 +61,26 @@ def update_buffer(buffer_, new_value):
     buffer_[-1] = new_value
 
 
+def get_trend_time_grid_and_temperature(time_grid, temperature_buffer):
+    time = time_grid[-TREND_WINDOW_LENGTH:]
+    temperature = temperature_buffer[-TREND_WINDOW_LENGTH:]
+    mask = ~np.isnan(temperature)
+    return time[mask], temperature[mask]
+
+
 def compute_trend(time_grid, temperature_buffer):
-    mask = ~np.isnan(temperature_buffer)
-    spline = UnivariateSpline(
-        time_grid[mask], temperature_buffer[mask], s=SMOOTHING_PARAMETER
+    time, temperature = get_trend_time_grid_and_temperature(
+        time_grid, temperature_buffer
     )
-    return spline
+    spline = UnivariateSpline(time, temperature, s=SMOOTHING_PARAMETER)
+    temperature_values = spline(time)
+    return spline, time, temperature_values
 
 
-def evaluate_trend(time_grid, spline):
-    mask = ~np.isnan(temperature_buffer)
-    time_values = time_grid[mask]
-    temperature_values = spline(time_values)
-    return time_values, temperature_values
-
-
-def update_trend_line_and_title(time_grid, spline):
-    time_values, temperature_values = evaluate_trend(time_grid, spline)
+def update_trend_line_and_title(time_grid, temperature_buffer):
+    spline, time_values, temperature_values = compute_trend(
+        time_grid, temperature_buffer
+    )
     trend_line.set_xdata(time_values)
     trend_line.set_ydata(temperature_values)
     slope_F_per_hr = spline(time_grid[-1], 1) / 24.0
@@ -78,6 +89,7 @@ def update_trend_line_and_title(time_grid, spline):
             hostname=HOSTNAME, slope=slope_F_per_hr
         )
     )
+    return slope_F_per_hr
 
 
 def update_temperature_trace(time_grid, temperature_buffer):
@@ -98,12 +110,11 @@ def write_data_file(time_grid, temperature_buffer):
         pkl.dump([time_grid, temperature_buffer], pf)
 
 
-def slope_to_duty_cycle(slope):
-    slope /= 24.0
-    if slope >= 0:
-        return min(slope, MAX_POSITIVE_SLOPE) / MAX_POSITIVE_SLOPE
+def slope_to_duty_cycle(slope_F_per_hr):
+    if slope_F_per_hr >= 0:
+        return min(slope_F_per_hr, MAX_POSITIVE_SLOPE) / MAX_POSITIVE_SLOPE
     else:
-        return max(slope, MIN_NEGATIVE_SLOPE) / MIN_NEGATIVE_SLOPE
+        return max(slope_F_per_hr, MIN_NEGATIVE_SLOPE) / MIN_NEGATIVE_SLOPE
 
 
 def update_pwm(slope):
@@ -124,9 +135,10 @@ try:
         update_buffer(temperature_buffer, temperature)
         update_buffer(time_grid, timestamp)
         if steps % PLOT_UPDATE_STEP_INTERVAL_STEPS == 0:
-            spline = compute_trend(time_grid, temperature_buffer)
-            update_pwm(spline(time_grid[-1], 1))
-            update_trend_line_and_title(time_grid, spline)
+            slope_F_per_hr = update_trend_line_and_title(
+                time_grid, temperature_buffer
+            )
+            update_pwm(slope_F_per_hr)
             update_temperature_trace(time_grid, temperature_buffer)
             redraw_and_save_plot()
             write_data_file(time_grid, temperature_buffer)
