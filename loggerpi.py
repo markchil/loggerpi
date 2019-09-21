@@ -31,8 +31,8 @@ BUFFER_DURATION_SECONDS = 60.0 * 60.0 * 24.0
 BUFFER_LENGTH = int(np.ceil(BUFFER_DURATION_SECONDS / UPDATE_INTERVAL_SECONDS))
 
 HOSTNAME = gethostname()
-PLOT_FILE_NAME = 'temperature.png'
-DATA_FILE_NAME = 'temperature.pkl'
+PLOT_FILE_NAME = '/var/www/html/files/temperature.png'
+DATA_FILE_NAME = '/var/www/html/files/temperature.pkl'
 
 PWM_FREQUENCY_HZ = 60
 MAX_SLOPE_F_PER_HR = 2
