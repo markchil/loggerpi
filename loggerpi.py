@@ -61,7 +61,7 @@ class PlotHandler(object):
             '.-',
             linewidth=1
         )
-        trend_line, = self.axes.plot_date(
+        self.trend_line, = self.axes.plot_date(
             self.data_handler.trend_time_buffer,
             self.data_handler.trend_temperature_buffer,
             '-'
