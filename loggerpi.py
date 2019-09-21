@@ -29,7 +29,7 @@ DATA_FILE_NAME = 'temperature.pkl'
 PWM_FREQUENCY = 60
 MAX_POSITIVE_SLOPE = 10
 MIN_NEGATIVE_SLOPE = -10
-SMOOTHING_PARAMETER = 100
+SMOOTHING_PARAMETER = 440
 
 lightshow.setup_LED_pins()
 red_pwm = lightshow.start_PWM(lightshow.RED_LED_PIN, PWM_FREQUENCY, 0)
