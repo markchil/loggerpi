@@ -223,7 +223,7 @@ if __name__ == '__main__':
     sensor = W1ThermSensor()
     light_handler = LightHandler()
     data_handler = DataHandler()
-    plot_handler = PlotHandler()
+    plot_handler = PlotHandler(data_handler)
 
     steps = 1
     try:
