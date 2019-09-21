@@ -110,7 +110,7 @@ class PlotHandler(object):
         self.figure.canvas.draw_idle()
 
     def save_plot(self):
-        self.figure.savefig(self.filename, bbox_inches='tight')
+        self.figure.savefig(self.filename, bbox_inches='tight', dpi=300)
 
 
 class DataHandler(object):
