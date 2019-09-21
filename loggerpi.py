@@ -125,14 +125,15 @@ class DataHandler(object):
         self.temperature_length = temperature_length
         self.trend_length = trend_length
         self.smoothing_parameter = smoothing_parameter
+
         try:
-            with open(self.data_file_name, 'rb') as pf:
-                self.time_buffer, self.temperature_buffer = pkl.load(pf)
+            self.load_data_file()
         except FileNotFoundError:
             self.temperature_buffer = np.nan * np.zeros(
                 self.temperature_length
             )
             self.time_buffer = np.nan * np.zeros(self.temperature_length)
+
         self.trend_temperature_buffer = np.nan * np.zeros(self.trend_length)
         self.trend_time_buffer = np.nan * np.zeros(self.trend_length)
 
@@ -147,7 +148,6 @@ class DataHandler(object):
 
     def trend_grid(self, array):
         array = array[-self.trend_length:]
-        array = array[~np.isnan(array)]
         return array
 
     @property
@@ -160,9 +160,11 @@ class DataHandler(object):
 
     def update_trend(self):
         time_grid = self.trend_time_grid
+        temperature_grid = self.trend_temperature_grid
+        mask = ~np.isnan(time_grid) & ~np.isnan(temperature_grid)
         self.spline = UnivariateSpline(
-            time_grid,
-            self.trend_temperature_grid,
+            time_grid[mask],
+            self.trend_temperature_grid[mask],
             s=self.smoothing_parameter
         )
         self.trend_time_buffer = time_grid
@@ -174,6 +176,10 @@ class DataHandler(object):
     def write_data_file(self):
         with open(self.data_file_name, 'wb') as pf:
             pkl.dump([self.time_buffer, self.temperature_buffer], pf)
+
+    def load_data_file(self):
+        with open(self.data_file_name, 'rb') as pf:
+            self.time_buffer, self.temperature_buffer = pkl.load(pf)
 
 
 class LightHandler(object):
