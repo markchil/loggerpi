@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import matplotlib
-matplotlib.use('pdf')
 from time import sleep
 from datetime import datetime
 from socket import gethostname
@@ -29,7 +27,7 @@ DATA_FILE_NAME = 'temperature.pkl'
 PWM_FREQUENCY = 60
 MAX_POSITIVE_SLOPE = 10
 MIN_NEGATIVE_SLOPE = -10
-SMOOTHING_PARAMETER = 440
+SMOOTHING_PARAMETER = 500
 
 lightshow.setup_LED_pins()
 red_pwm = lightshow.start_PWM(lightshow.RED_LED_PIN, PWM_FREQUENCY, 0)
@@ -85,8 +83,11 @@ def update_trend_line_and_title(time_grid, temperature_buffer):
     trend_line.set_ydata(temperature_values)
     slope_F_per_hr = spline(time_grid[-1], 1) / 24.0
     axes.set_title(
-        '{hostname:s}: $dT/dt={slope:+.1f}$°F/hr'.format(
-            hostname=HOSTNAME, slope=slope_F_per_hr
+        '{hostname:s}: '
+        '$T={temperature:.1f}$°F, $dT/dt={slope:+.1f}$°F/hr'.format(
+            hostname=HOSTNAME,
+            temperature=temperature_buffer[-1],
+            slope=slope_F_per_hr
         )
     )
     return slope_F_per_hr
