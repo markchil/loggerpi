@@ -152,11 +152,11 @@ class DataHandler(object):
 
     @property
     def trend_time_grid(self):
-        return self.trend_grid(self.time_grid)
+        return self.trend_grid(self.trend_time_grid)
 
     @property
     def trend_temperature_grid(self):
-        return self.trend_grid(self.temperature_grid)
+        return self.trend_grid(self.trend_temperature_grid)
 
     def update_trend(self):
         time_grid = self.trend_time_grid
