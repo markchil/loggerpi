@@ -58,13 +58,14 @@ class PlotHandler(object):
         self.temperature_line, = self.axes.plot_date(
             self.data_handler.time_buffer,
             self.data_handler.temperature_buffer,
-            '.-',
-            linewidth=1
+            '-',
+            linewidth=1.5
         )
         self.trend_line, = self.axes.plot_date(
             self.data_handler.trend_time_buffer,
             self.data_handler.trend_temperature_buffer,
-            '-'
+            '-',
+            linewidth=1
         )
 
     def update_plot(self):
