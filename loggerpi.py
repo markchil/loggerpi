@@ -228,7 +228,6 @@ if __name__ == '__main__':
         raise RuntimeError('GPIO is not available!')
 
     sensor = W1ThermSensor()
-    sensor.set_precision(12)
     light_handler = LightHandler()
     data_handler = DataHandler()
     plot_handler = PlotHandler(data_handler)
