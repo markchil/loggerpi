@@ -3,6 +3,8 @@
 from time import sleep
 from datetime import datetime
 from socket import gethostname
+import os.path
+from shutil import move
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 import matplotlib.pyplot as plt
@@ -31,8 +33,9 @@ BUFFER_DURATION_SECONDS = 60.0 * 60.0 * 24.0
 BUFFER_LENGTH = int(np.ceil(BUFFER_DURATION_SECONDS / UPDATE_INTERVAL_SECONDS))
 
 HOSTNAME = gethostname()
-PLOT_FILE_NAME = '/var/www/html/files/temperature.png'
-DATA_FILE_NAME = '/var/www/html/files/temperature.pkl'
+DIRECTORY_PATH = '/var/www/html/files/'
+PLOT_FILE_NAME = 'temperature.png'
+DATA_FILE_NAME = 'temperature.pkl'
 
 PWM_FREQUENCY_HZ = 60
 MAX_SLOPE_F_PER_HR = 2
@@ -41,15 +44,37 @@ MIN_SLOPE_F_PER_HR = 0.3
 SMOOTHING_PARAMETER = 500
 
 
-class PlotHandler(object):
+class PathHandler(object):
+    def __init__(self, directory_path, file_name):
+        self.directory_path = directory_path
+        self.file_name = file_name
+
+    @property
+    def temp_file_name(self):
+        return 'temp.' + self.file_name
+
+    @property
+    def temp_file_path(self):
+        return os.path.join(self.directory_path, self.temp_file_name)
+
+    @property
+    def file_path(self):
+        return os.path.join(self.directory_path, self.file_name)
+
+    def move_temp_to_permanent(self):
+        move(self.temp_file_path, self.file_path)
+
+
+class PlotHandler(PathHandler):
     def __init__(
         self,
         data_handler,
-        filename=PLOT_FILE_NAME,
+        file_name=PLOT_FILE_NAME,
+        directory_path=DIRECTORY_PATH,
         hostname=HOSTNAME
     ):
+        super().__init__(directory_path, file_name)
         self.data_handler = data_handler
-        self.filename = filename
         self.hostname = hostname
         self.figure, self.axes = plt.subplots()
         self.axes.set_xlabel('Time')
@@ -111,18 +136,20 @@ class PlotHandler(object):
         self.figure.canvas.draw_idle()
 
     def save_plot(self):
-        self.figure.savefig(self.filename, bbox_inches='tight', dpi=300)
+        self.figure.savefig(self.temp_file_path, bbox_inches='tight', dpi=300)
+        self.move_temp_to_permanent()
 
 
-class DataHandler(object):
+class DataHandler(PathHandler):
     def __init__(
         self,
         data_file_name=DATA_FILE_NAME,
+        directory_path=DIRECTORY_PATH,
         temperature_length=BUFFER_LENGTH,
         trend_length=TREND_WINDOW_LENGTH,
         smoothing_parameter=SMOOTHING_PARAMETER
     ):
-        self.data_file_name = data_file_name
+        super().__init__(directory_path, data_file_name)
         self.temperature_length = temperature_length
         self.trend_length = trend_length
         self.smoothing_parameter = smoothing_parameter
@@ -175,11 +202,12 @@ class DataHandler(object):
         return self.slope_f_per_hr
 
     def write_data_file(self):
-        with open(self.data_file_name, 'wb') as pf:
+        with open(self.temp_file_path, 'wb') as pf:
             pkl.dump([self.time_buffer, self.temperature_buffer], pf)
+        self.move_temp_to_permanent()
 
     def load_data_file(self):
-        with open(self.data_file_name, 'rb') as pf:
+        with open(self.file_path, 'rb') as pf:
             self.time_buffer, self.temperature_buffer = pkl.load(pf)
 
 
