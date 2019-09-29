@@ -288,8 +288,8 @@ if __name__ == '__main__':
     try:
         while True:
             temperature = sensor.get_temperature(UNITS)
-            timestamp = date2num(datetime.now())
-            data_handler.record_measurement(timestamp, temperature)
+            datetimestamp = date2num(datetime.now())
+            data_handler.record_measurement(datetimestamp, temperature)
             if steps % PLOT_UPDATE_INTERVAL_STEPS == 0:
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
