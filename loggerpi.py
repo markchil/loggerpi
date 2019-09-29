@@ -63,6 +63,10 @@ MIN_SLOPE_F_PER_HR = 0.3
 SMOOTHING_PARAMETER = 500
 
 
+def timestamp():
+    return datetime.now().strftime('%H:%M:%S')
+
+
 class PathHandler(object):
     def __init__(self, directory_path, file_name):
         self.directory_path = directory_path
@@ -140,8 +144,9 @@ class PlotHandler(PathHandler):
 
     def update_title(self):
         self.axes.set_title(
-            '{hostname:s}: '
+            '{timestamp:s} {hostname:s}: '
             '$T={temperature:.1f}$°F, $dT/dt={slope:+.1f}$°F/hr'.format(
+                timestamp=timestamp(),
                 hostname=self.hostname,
                 temperature=self.data_handler.temperature_buffer[-1],
                 slope=self.data_handler.slope_f_per_hr
