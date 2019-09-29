@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from warnings import warn
 from time import sleep
 from datetime import datetime
 from socket import gethostname
@@ -288,10 +289,10 @@ if __name__ == '__main__':
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                # try:
-                plot_handler.update_plot()
-                # except MemoryError:
-                #     print('Could not render plot!')
+                try:
+                    plot_handler.update_plot()
+                except MemoryError:
+                    warn('Could not render plot!', category=RuntimeWarning)
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
