@@ -288,10 +288,10 @@ if __name__ == '__main__':
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                try:
-                    plot_handler.update_plot()
-                except MemoryError:
-                    print('Could not render plot!')
+                # try:
+                plot_handler.update_plot()
+                # except MemoryError:
+                #     print('Could not render plot!')
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
