@@ -195,8 +195,21 @@ class DataHandler(PathHandler):
         buffer_[-1] = new_value
 
     def record_measurement(self, timestamp, temperature):
-        self.update_buffer(self.time_buffer, timestamp)
-        self.update_buffer(self.temperature_buffer, temperature)
+        if self.timestamp_is_increasing(timestamp):
+            self.update_buffer(self.time_buffer, timestamp)
+            self.update_buffer(self.temperature_buffer, temperature)
+        else:
+            warn(
+                'Timestamp is not increasing, measurement is being discarded!',
+                category=RuntimeWarning
+            )
+
+    def timestamp_is_increasing(self, timestamp):
+        """When recovering from crashes, the time variable is sometimes
+        non-monotonic. This function checks to see if the timestamp is
+        increasing so that erroneous measurements can be rejected.
+        """
+        return timestamp > self.time_buffer[-1]
 
     def trend_grid(self, array):
         array = array[-self.trend_length:]
