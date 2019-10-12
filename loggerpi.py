@@ -293,7 +293,6 @@ if __name__ == '__main__':
         raise RuntimeError('GPIO is not available!')
 
     print('loggerpi loading...')
-    warn('test!', category=RuntimeWarning)
 
     sensor = W1ThermSensor()
     light_handler = LightHandler()
