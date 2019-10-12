@@ -292,6 +292,9 @@ if __name__ == '__main__':
     if not on_pi:
         raise RuntimeError('GPIO is not available!')
 
+    print('loggerpi loading...')
+    warn('test!', category=RuntimeWarning)
+
     sensor = W1ThermSensor()
     light_handler = LightHandler()
     data_handler = DataHandler()
@@ -314,5 +317,7 @@ if __name__ == '__main__':
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
+    except KeyboardInterrupt:
+        print('loggerpi shutting down...')
     finally:
         cleanup()
