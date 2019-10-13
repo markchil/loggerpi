@@ -306,10 +306,14 @@ if __name__ == '__main__':
             datetimestamp = date2num(datetime.now())
             data_handler.record_measurement(datetimestamp, temperature)
             if steps % PLOT_UPDATE_INTERVAL_STEPS == 0:
+                print('Updating trend...')
                 slope_f_per_hr = data_handler.update_trend()
+                print('Updating PWM...')
                 light_handler.update_pwm(slope_f_per_hr)
+                print('Writing data file...')
                 data_handler.write_data_file()
                 try:
+                    print('Updating plot...')
                     plot_handler.update_plot()
                 except MemoryError:
                     warn('Could not render plot!', category=RuntimeWarning)
