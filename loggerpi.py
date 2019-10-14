@@ -99,6 +99,12 @@ class PlotHandler(PathHandler):
         super().__init__(directory_path, file_name)
         self.data_handler = data_handler
         self.hostname = hostname
+        self.figure = None
+        self.initialize_plot()
+
+    def initialize_plot(self):
+        if self.figure is not None:
+            plt.close(self.figure)
         self.figure, self.axes = plt.subplots()
         self.axes.set_xlabel('Time')
         self.axes.set_ylabel('Temperature [°F]')
@@ -306,17 +312,14 @@ if __name__ == '__main__':
             datetimestamp = date2num(datetime.now())
             data_handler.record_measurement(datetimestamp, temperature)
             if steps % PLOT_UPDATE_INTERVAL_STEPS == 0:
-                print('Updating trend...')
                 slope_f_per_hr = data_handler.update_trend()
-                print('Updating PWM...')
                 light_handler.update_pwm(slope_f_per_hr)
-                print('Writing data file...')
                 data_handler.write_data_file()
                 try:
-                    print('Updating plot...')
                     plot_handler.update_plot()
                 except MemoryError:
                     warn('Could not render plot!', category=RuntimeWarning)
+                    plot_handler.initialize_plot()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
