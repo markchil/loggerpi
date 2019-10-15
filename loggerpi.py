@@ -20,7 +20,7 @@
 
 from warnings import warn
 from time import sleep
-from datetime import datetime
+from datetime import datetime, time
 from socket import gethostname
 import os.path
 from shutil import move
@@ -60,12 +60,24 @@ DATA_FILE_NAME = 'temperature.pkl'
 PWM_FREQUENCY_HZ = 60
 MAX_SLOPE_F_PER_HR = 2
 MIN_SLOPE_F_PER_HR = 0.3
+LIGHTS_OUT_TIME = time(21, 30)
+LIGHTS_ON_TIME = time(6, 00)
 
 SMOOTHING_PARAMETER = 500
 
 
 def timestamp():
     return datetime.now().strftime('%H:%M:%S')
+
+
+def current_time_is_between(begin_time, end_time):
+    # https://stackoverflow.com/questions/10048249/how-do-i-determine-if-current-time-is-within-a-specified-range-using-pythons-da
+    # If check time is not given, default to current UTC time
+    check_time = datetime.now().time()
+    if begin_time < end_time:
+        return check_time >= begin_time and check_time <= end_time
+    else:  # crosses midnight
+        return check_time >= begin_time or check_time <= end_time
 
 
 class PathHandler(object):
@@ -278,12 +290,15 @@ class LightHandler(object):
             pass
 
     def slope_to_duty_cycle(self, slope_f_per_hr):
-        return 100 * (
-            min(
-                max(0, (abs(slope_f_per_hr) - self.min_slope_f_per_hr)),
-                self.max_slope_f_per_hr - self.min_slope_f_per_hr
-            ) / (self.max_slope_f_per_hr - self.min_slope_f_per_hr)
-        )
+        if current_time_is_between(LIGHTS_OUT_TIME, LIGHTS_ON_TIME):
+            return 0
+        else:
+            return 100 * (
+                min(
+                    max(0, (abs(slope_f_per_hr) - self.min_slope_f_per_hr)),
+                    self.max_slope_f_per_hr - self.min_slope_f_per_hr
+                ) / (self.max_slope_f_per_hr - self.min_slope_f_per_hr)
+            )
 
     def update_pwm(self, slope_f_per_hr):
         duty_cycle = self.slope_to_duty_cycle(slope_f_per_hr)
