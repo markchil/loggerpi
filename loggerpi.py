@@ -29,6 +29,7 @@ from scipy.interpolate import UnivariateSpline
 import matplotlib.pyplot as plt
 from matplotlib.dates import date2num
 import pickle as pkl
+from gc import collect
 try:
     import lightshow
     from w1thermsensor import W1ThermSensor
@@ -320,6 +321,10 @@ if __name__ == '__main__':
                 except MemoryError:
                     warn('Could not render plot!', category=RuntimeWarning)
                     plot_handler.initialize_plot()
+                # Manually trigger garbage collection to attempt to mitigate
+                # probable memory leak in Matplotlib. This issue may have been
+                # fixed in newer versions...
+                collect()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
