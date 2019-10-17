@@ -335,7 +335,7 @@ if __name__ == '__main__':
                     plot_handler.update_plot()
                 except MemoryError:
                     warn('Could not render plot!', category=RuntimeWarning)
-                    plot_handler.initialize_plot()
+                plot_handler.initialize_plot()
                 # Manually trigger garbage collection to attempt to mitigate
                 # probable memory leak in Matplotlib. This issue may have been
                 # fixed in newer versions...
