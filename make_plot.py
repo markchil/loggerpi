@@ -24,32 +24,3 @@ data_handler = DataHandler()
 data_handler.update_trend()
 plot_handler = PlotHandler(data_handler)
 plot_handler.update_plot()
-
-webpage = """<!DOCTYPE html>
-<html>
-<head>
-    Temperature Logger 1
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        .imgbox {
-            display: grid;
-            height: 100%;
-        }
-        .center-fit {
-            max-width: 100%;
-            max-height: 100vh;
-            margin: auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="imgbox">
-        <img class="center-fit" src="/files/temperature.png" />
-    </div>
-</body>
-</html>
-"""
-print(webpage)

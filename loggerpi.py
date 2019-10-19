@@ -319,7 +319,7 @@ if __name__ == '__main__':
     sensor = W1ThermSensor()
     light_handler = LightHandler()
     data_handler = DataHandler()
-    # plot_handler = PlotHandler(data_handler)
+    plot_handler = PlotHandler(data_handler)
 
     steps = 1
     try:
@@ -331,15 +331,15 @@ if __name__ == '__main__':
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                # try:
-                #     plot_handler.update_plot()
-                # except MemoryError:
-                #     warn('Could not render plot!', category=RuntimeWarning)
-                # plot_handler.initialize_plot()
-                # # Manually trigger garbage collection to attempt to mitigate
-                # # probable memory leak in Matplotlib. This issue may have been
-                # # fixed in newer versions...
-                # collect()
+                try:
+                    plot_handler.update_plot()
+                except MemoryError:
+                    warn('Could not render plot!', category=RuntimeWarning)
+                plot_handler.initialize_plot()
+                # Manually trigger garbage collection to attempt to mitigate
+                # probable memory leak in Matplotlib. This issue may have been
+                # fixed in newer versions...
+                collect()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
