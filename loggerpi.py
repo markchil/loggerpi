@@ -330,6 +330,8 @@ if __name__ == '__main__':
     sensor = W1ThermSensor()
     light_handler = LightHandler()
     data_handler = DataHandler()
+    plot_thread = Thread()
+    plot_thread.start()
     # plot_handler = PlotHandler(data_handler)
 
     steps = 1
@@ -339,11 +341,13 @@ if __name__ == '__main__':
             datetimestamp = date2num(datetime.now())
             data_handler.record_measurement(datetimestamp, temperature)
             if steps % PLOT_UPDATE_INTERVAL_STEPS == 0:
+                # Ensure only one plot thread runs at once:
+                plot_thread.join()
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                x = Thread(target=update_plot)
-                x.start()
+                plot_thread = Thread(target=update_plot)
+                plot_thread.start()
                 # try:
                 #     plot_handler.update_plot()
                 # except MemoryError:
