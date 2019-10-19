@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import date2num
 import pickle as pkl
 from gc import collect
+from threading import Thread
 try:
     import lightshow
     from w1thermsensor import W1ThermSensor
@@ -310,6 +311,14 @@ class LightHandler(object):
             self.blue_pwm.ChangeDutyCycle(duty_cycle)
 
 
+def update_plot(data_handler):
+    plot_handler = PlotHandler(data_handler)
+    try:
+        plot_handler.update_plot()
+    except MemoryError:
+        warn('Could not render plot!', category=RuntimeWarning)
+
+
 if __name__ == '__main__':
     if not on_pi:
         raise RuntimeError('GPIO is not available!')
@@ -319,7 +328,7 @@ if __name__ == '__main__':
     sensor = W1ThermSensor()
     light_handler = LightHandler()
     data_handler = DataHandler()
-    plot_handler = PlotHandler(data_handler)
+    # plot_handler = PlotHandler(data_handler)
 
     steps = 1
     try:
@@ -331,15 +340,17 @@ if __name__ == '__main__':
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                try:
-                    plot_handler.update_plot()
-                except MemoryError:
-                    warn('Could not render plot!', category=RuntimeWarning)
-                plot_handler.initialize_plot()
-                # Manually trigger garbage collection to attempt to mitigate
-                # probable memory leak in Matplotlib. This issue may have been
-                # fixed in newer versions...
-                collect()
+                x = Thread(target=update_plot, args=(data_handler, ))
+                x.start()
+                # try:
+                #     plot_handler.update_plot()
+                # except MemoryError:
+                #     warn('Could not render plot!', category=RuntimeWarning)
+                # plot_handler.initialize_plot()
+                # # Manually trigger garbage collection to attempt to mitigate
+                # # probable memory leak in Matplotlib. This issue may have been
+                # # fixed in newer versions...
+                # collect()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
