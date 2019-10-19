@@ -350,7 +350,7 @@ if __name__ == '__main__':
                 # # Manually trigger garbage collection to attempt to mitigate
                 # # probable memory leak in Matplotlib. This issue may have been
                 # # fixed in newer versions...
-                # collect()
+                collect()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
