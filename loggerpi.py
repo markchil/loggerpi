@@ -312,7 +312,7 @@ class LightHandler(object):
             self.blue_pwm.ChangeDutyCycle(duty_cycle)
 
 
-def update_plot(data_handler):
+def update_plot():
     run('/home/pi/src/loggerpi/make_plot.py')
     # plot_handler = PlotHandler(data_handler)
     # try:
