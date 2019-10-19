@@ -31,6 +31,7 @@ from matplotlib.dates import date2num
 import pickle as pkl
 from gc import collect
 from threading import Thread
+from subprocess import run
 try:
     import lightshow
     from w1thermsensor import W1ThermSensor
@@ -312,11 +313,12 @@ class LightHandler(object):
 
 
 def update_plot(data_handler):
-    plot_handler = PlotHandler(data_handler)
-    try:
-        plot_handler.update_plot()
-    except MemoryError:
-        warn('Could not render plot!', category=RuntimeWarning)
+    run('/home/pi/src/loggerpi/make_plot.py')
+    # plot_handler = PlotHandler(data_handler)
+    # try:
+    #     plot_handler.update_plot()
+    # except MemoryError:
+    #     warn('Could not render plot!', category=RuntimeWarning)
 
 
 if __name__ == '__main__':
@@ -340,7 +342,7 @@ if __name__ == '__main__':
                 slope_f_per_hr = data_handler.update_trend()
                 light_handler.update_pwm(slope_f_per_hr)
                 data_handler.write_data_file()
-                x = Thread(target=update_plot, args=(data_handler, ))
+                x = Thread(target=update_plot)
                 x.start()
                 # try:
                 #     plot_handler.update_plot()
@@ -350,7 +352,7 @@ if __name__ == '__main__':
                 # # Manually trigger garbage collection to attempt to mitigate
                 # # probable memory leak in Matplotlib. This issue may have been
                 # # fixed in newer versions...
-                collect()
+                # collect()
                 steps = 0
             steps += 1
             sleep(UPDATE_INTERVAL_SECONDS)
