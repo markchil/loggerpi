@@ -230,7 +230,9 @@ class DataHandler(PathHandler):
         non-monotonic. This function checks to see if the timestamp is
         increasing so that erroneous measurements can be rejected.
         """
-        return timestamp > self.time_buffer[-1]
+        return (
+            np.isnan(self.time_buffer[-1]) or timestamp > self.time_buffer[-1]
+        )
 
     def trend_grid(self, array):
         array = array[-self.trend_length:]
